@@ -1,14 +1,12 @@
 
 package tampilan;
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
-import com.mysql.cj.Query;
-import java.lang.System.Logger.Level;
+
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Logger;
-import java.util.logging.Logger;
-import javax.swing.UIManager;
+import javax.swing.table.DefaultTableModel;
 import kelas.user;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import javax.swing.UIManager;
         
 /**
  *
@@ -21,7 +19,49 @@ public class frameuser extends javax.swing.JFrame {
      */
     public frameuser() {
         initComponents();
+        loadTabel();
+        reset();
     }
+    void loadTabel() {
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("User Name");
+        model.addColumn("Email");
+        model.addColumn("Full Name");
+        model.addColumn("Status");
+
+        try {
+            user us = new user();
+            ResultSet data = us.tampilUser();
+
+            while (data.next()) {
+                model.addRow(new Object[]{
+                    data.getString("user_name"),
+                    data.getString("user_email"),
+                    data.getString("user_fullname"),
+                    data.getInt("user_status") == 1 ? "Aktif" : "Tidak Aktif"
+                });
+
+            }
+
+        } catch (SQLException sQLException) {
+        }
+
+        tUser.setModel(model);
+
+    }
+
+    void reset() {
+        tusername.setText(null);
+        tusername.setEditable(true);
+        temail.setText(null);
+        tpassword.setText(null);
+        tfullname.setText(null);
+        cstatus.setSelectedItem(null);
+    }
+    
+   
+                        
+     
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -39,6 +79,10 @@ public class frameuser extends javax.swing.JFrame {
         tpassword = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tUser = new javax.swing.JTable();
+        bUbah = new javax.swing.JButton();
+        bHapus = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -88,6 +132,42 @@ public class frameuser extends javax.swing.JFrame {
         jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/FOTO/User Name.png"))); // NOI18N
         getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
+        tUser.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        tUser.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tUserMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(tUser);
+
+        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 10, -1, -1));
+
+        bUbah.setText("Ubah");
+        bUbah.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bUbahActionPerformed(evt);
+            }
+        });
+        getContentPane().add(bUbah, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 450, 100, 30));
+
+        bHapus.setText("Hapus");
+        bHapus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bHapusActionPerformed(evt);
+            }
+        });
+        getContentPane().add(bHapus, new org.netbeans.lib.awtextra.AbsoluteConstraints(815, 450, 90, 30));
+
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
@@ -115,6 +195,53 @@ public class frameuser extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jLabel1MouseClicked
 
+    private void bHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bHapusActionPerformed
+        // TODO add your handling code here:
+        try {
+            user usr = new user();
+            usr.setUser_name(tusername.getText());
+            usr.hapusUser();
+        } catch (SQLException sQLException) {
+        }
+        loadTabel();
+        reset();
+    }//GEN-LAST:event_bHapusActionPerformed
+
+    private void tUserMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tUserMouseClicked
+        // TODO add your handling code here
+        int baris = tUser.rowAtPoint(evt.getPoint());
+        String userName = tUser.getValueAt(baris, 0).toString();
+        String email = tUser.getValueAt(baris, 1).toString();
+        String fullName = tUser.getValueAt(baris, 2).toString();
+        String status = tUser.getValueAt(baris, 3).toString();
+
+        tusername.setText(userName);
+        tusername.setEditable(false);
+        temail.setText(email);
+        tfullname.setText(fullName);
+        cstatus.setSelectedItem(status);
+    }//GEN-LAST:event_tUserMouseClicked
+
+    private void bUbahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bUbahActionPerformed
+        // TODO add your handling code here:
+        try {
+            user usr = new user();
+            usr.setUser_name(tusername.getText());
+            usr.setUser_email(temail.getText());
+            usr.setUser_password(tpassword.getText());
+            usr.setUser_fullname(tfullname.getText());
+             if (cstatus.getSelectedItem().equals("Aktif")) {
+                usr.setUser_status(1);
+            } else {
+                usr.setUser_status(0);
+            }
+            usr.ubahUser();
+        } catch (SQLException sQLException) {
+        }
+        loadTabel();
+        reset();
+    }//GEN-LAST:event_bUbahActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -137,9 +264,13 @@ public class frameuser extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton bHapus;
+    private javax.swing.JButton bUbah;
     private javax.swing.JComboBox<String> cstatus;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable tUser;
     private javax.swing.JTextField temail;
     private javax.swing.JTextField tfullname;
     private javax.swing.JTextField tpassword;
